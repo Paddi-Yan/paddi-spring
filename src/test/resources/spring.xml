@@ -13,8 +13,10 @@
         <property name="brand" value="porsche"/>
     </bean>
 
-    <bean class="common.CustomBeanFactoryPostProcessor"/>
+<!--    <bean class="common.CustomBeanFactoryPostProcessor"/>-->
 
-    <bean class="common.CustomerBeanPostProcessor"/>
+<!--    <bean class="common.CustomerBeanPostProcessor"/>-->
+
+    <bean id="helloService" class="service.HelloService"/>
 
 </beans>
