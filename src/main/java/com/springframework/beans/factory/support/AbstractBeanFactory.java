@@ -1,12 +1,15 @@
 package com.springframework.beans.factory.support;
 
 import com.springframework.beans.BeansException;
+import com.springframework.beans.factory.FactoryBean;
 import com.springframework.beans.factory.config.BeanDefinition;
 import com.springframework.beans.factory.config.BeanPostProcessor;
 import com.springframework.beans.factory.config.ConfigurableBeanFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: Paddi-Yan
@@ -17,14 +20,48 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
 
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
 
+    private final Map<String, Object> factoryBeansObjectCache = new HashMap<>();
+
     @Override
     public Object getBean(String name) throws BeansException {
-        Object bean = getSingleton(name);
-        if(bean != null) {
-            return bean;
+        Object sharedInstance = getSingleton(name);
+        if(sharedInstance != null) {
+            //如果是FactoryBean 从FactoryBean#getObject中创建Bean
+            return getObjectForBeanInstance(sharedInstance, name);
         }
         BeanDefinition beanDefinition = getBeanDefinition(name);
-        return createBean(name, beanDefinition);
+        Object bean = createBean(name, beanDefinition);
+        return getObjectForBeanInstance(bean, name);
+    }
+
+    /**
+     * 如果是FactoryBean 从FactoryBean#getObject中创建bean
+     *
+     * @param beanInstance
+     * @param beanName
+     * @return
+     */
+    protected Object getObjectForBeanInstance(Object beanInstance, String beanName) {
+        Object object = beanInstance;
+        if(beanInstance instanceof FactoryBean) {
+            FactoryBean factoryBean = (FactoryBean) beanInstance;
+            try {
+                if(factoryBean.isSingleton()) {
+                    //singleton作用域bean，从缓存中获取
+                    object = factoryBeansObjectCache.get(beanName);
+                    if(object == null) {
+                        object = factoryBean.getObject();
+                        this.factoryBeansObjectCache.put(beanName, object);
+                    }
+                }else {
+                    //prototype作用域bean，新创建bean
+                    object = factoryBean.getObject();
+                }
+            }catch(Exception e) {
+                throw new BeansException("FactoryBean threw exception on object[" + beanName + "] creation", e);
+            }
+        }
+        return object;
     }
 
     @Override
