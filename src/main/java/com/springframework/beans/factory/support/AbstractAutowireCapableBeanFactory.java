@@ -8,10 +8,7 @@ import com.springframework.beans.PropertyValue;
 import com.springframework.beans.factory.BeanFactoryAware;
 import com.springframework.beans.factory.DisposableBean;
 import com.springframework.beans.factory.InitializingBean;
-import com.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import com.springframework.beans.factory.config.BeanDefinition;
-import com.springframework.beans.factory.config.BeanPostProcessor;
-import com.springframework.beans.factory.config.BeanReference;
+import com.springframework.beans.factory.config.*;
 
 import java.lang.reflect.Method;
 
@@ -26,7 +23,45 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     @Override
     protected Object createBean(String beanName, BeanDefinition beanDefinition) throws BeansException {
+        //如果Bean需要生成代理对象直接生成代理对象并返回
+        Object proxy = resolveBeforeInstantiation(beanName, beanDefinition);
+        if(proxy != null) {
+            return proxy;
+        }
         return doCreateBean(beanName, beanDefinition);
+    }
+
+    /**
+     * 执行InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation 如果Bean需要生成代理对象 返回代理对象
+     * @param beanName
+     * @param beanDefinition
+     * @return proxy
+     */
+    private Object resolveBeforeInstantiation(String beanName, BeanDefinition beanDefinition) {
+        Object proxy = applyBeanPostProcessorsBeforeInstantiation(beanDefinition.getBeanClass(), beanName);
+        if(proxy != null) {
+            proxy = applyBeanPostProcessorsAfterInitialization(proxy, beanName);
+        }
+        return proxy;
+    }
+
+    /**
+     * 执行Bean实例化之前的前置处理
+     *
+     * @param beanClass
+     * @param beanName
+     * @return
+     */
+    protected Object applyBeanPostProcessorsBeforeInstantiation(Class beanClass, String beanName) {
+        for(BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if(beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                Object proxy = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessBeforeInstantiation(beanClass, beanName);
+                if(proxy != null) {
+                    return proxy;
+                }
+            }
+        }
+        return null;
     }
 
     protected Object doCreateBean(String beanName, BeanDefinition beanDefinition) {
@@ -129,6 +164,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
         return result;
     }
+
+
 
     @Override
     public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName) throws BeansException {

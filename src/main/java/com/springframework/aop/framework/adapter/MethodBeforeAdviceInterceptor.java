@@ -17,6 +17,13 @@ public class MethodBeforeAdviceInterceptor implements MethodInterceptor {
         this.advice = advice;
     }
 
+    public MethodBeforeAdviceInterceptor() {
+    }
+
+    public void setAdvice(MethodBeforeAdvice advice) {
+        this.advice = advice;
+    }
+
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
         //在执行代理对象的方法之前先执行beforeAdvice的操作

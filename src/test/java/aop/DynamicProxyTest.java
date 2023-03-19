@@ -103,7 +103,6 @@ public class DynamicProxyTest {
             WorldService proxy = (WorldService) new ProxyFactory(support).getProxy();
             proxy.explode();
         }
-
     }
 
 }
