@@ -9,5 +9,5 @@ import com.springframework.core.io.ResourceLoader;
  * @Project: mini-spring
  * @CreatedTime: 2023年03月18日 13:30:38
  */
-public interface ApplicationContext extends ListableBeanFactory, HierarchicalBeanFactory, ResourceLoader {
+public interface ApplicationContext extends ListableBeanFactory, HierarchicalBeanFactory, ResourceLoader, ApplicationEventPublisher{
 }
