@@ -1,13 +1,18 @@
 package aop;
 
 import com.springframework.aop.AdvisedSupport;
+import com.springframework.aop.ClassFilter;
 import com.springframework.aop.MethodMatcher;
 import com.springframework.aop.TargetSource;
 import com.springframework.aop.aspectj.AspectJExpressionPointcut;
+import com.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import com.springframework.aop.framework.CglibAopProxy;
 import com.springframework.aop.framework.JdkDynamicAopProxy;
 import com.springframework.aop.framework.ProxyFactory;
+import com.springframework.aop.framework.adapter.MethodBeforeAdviceInterceptor;
+import common.WorldServiceBeforeAdvice;
 import common.WorldServiceInterceptor;
+import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Before;
 import org.junit.Test;
 import service.WorldService;
@@ -60,6 +65,45 @@ public class DynamicProxyTest {
         advisedSupport.setProxyTargetClass(true);
         proxy = (WorldService) new ProxyFactory(advisedSupport).getProxy();
         proxy.explode();
+    }
+
+    @Test
+    public void testBeforeAdvice() throws Exception {
+        //设置BeforeAdvice
+        WorldServiceBeforeAdvice beforeAdvice = new WorldServiceBeforeAdvice();
+        MethodBeforeAdviceInterceptor methodInterceptor = new MethodBeforeAdviceInterceptor(beforeAdvice);
+        advisedSupport.setMethodInterceptor(methodInterceptor);
+
+        WorldService proxy = (WorldService) new ProxyFactory(advisedSupport).getProxy();
+        proxy.explode();
+    }
+
+    @Test
+    public void testAdvisor() throws Exception {
+        WorldService worldService = new WorldServiceImpl();
+
+        //Advisor是Pointcut和Advice的组合
+        String expression = "execution(* service.WorldService.explode(..))";
+        AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
+        WorldServiceBeforeAdvice advice = new WorldServiceBeforeAdvice();
+        MethodBeforeAdviceInterceptor adviceInterceptor = new MethodBeforeAdviceInterceptor(advice);
+
+        advisor.setExpression(expression);
+        advisor.setAdvice(adviceInterceptor);
+
+        ClassFilter classFilter = advisor.getPointcut().getClassFilter();
+        if(classFilter.matches(worldService.getClass())) {
+            AdvisedSupport support = new AdvisedSupport();
+            TargetSource targetSource = new TargetSource(worldService);
+            support.setTargetSource(targetSource);
+            support.setMethodInterceptor((MethodInterceptor) advisor.getAdvice());
+            support.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
+            support.setProxyTargetClass(true);
+
+            WorldService proxy = (WorldService) new ProxyFactory(support).getProxy();
+            proxy.explode();
+        }
+
     }
 
 }
