@@ -1,3 +1,5 @@
+package aop;
+
 import com.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.junit.Test;
 import service.HelloService;

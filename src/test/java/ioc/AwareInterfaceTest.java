@@ -1,3 +1,5 @@
+package ioc;
+
 import com.springframework.context.support.ClassPathXmlApplicationContext;
 import org.junit.Test;
 import service.HelloService;

@@ -1,3 +1,5 @@
+package ioc;
+
 import com.springframework.context.support.ClassPathXmlApplicationContext;
 import common.event.CustomEvent;
 import org.junit.Test;

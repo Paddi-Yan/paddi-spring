@@ -1,3 +1,5 @@
+package ioc;
+
 import cn.hutool.core.io.IoUtil;
 import com.springframework.core.io.DefaultResourceLoader;
 import com.springframework.core.io.FileSystemResource;

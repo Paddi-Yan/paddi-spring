@@ -1,3 +1,5 @@
+package ioc;
+
 import bean.Car;
 import bean.Person;
 import com.springframework.beans.factory.support.DefaultListableBeanFactory;
