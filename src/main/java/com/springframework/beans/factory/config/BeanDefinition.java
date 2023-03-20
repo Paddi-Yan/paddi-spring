@@ -2,6 +2,8 @@ package com.springframework.beans.factory.config;
 
 import com.springframework.beans.PropertyValues;
 
+import java.util.Objects;
+
 /**
  * BeanDefinition实例用于保存bean的信息，包括class类型、方法构造参数、是否为单例等
  * @Author: Paddi-Yan
@@ -86,6 +88,19 @@ public class BeanDefinition {
 
     public void setDestroyMethodName(String destroyMethodName) {
         this.destroyMethodName = destroyMethodName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BeanDefinition that = (BeanDefinition) o;
+        return beanClass.equals(that.beanClass);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(beanClass);
     }
 }
 

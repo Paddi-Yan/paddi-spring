@@ -7,6 +7,7 @@ import com.springframework.beans.factory.config.BeanDefinition;
 import com.springframework.beans.factory.config.BeanReference;
 import com.springframework.beans.factory.support.AbstractBeanDefinitionReader;
 import com.springframework.beans.factory.support.BeanDefinitionRegistry;
+import com.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import com.springframework.core.io.Resource;
 import com.springframework.core.io.ResourceLoader;
 import org.dom4j.Document;
@@ -34,6 +35,10 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
     public static final String INIT_METHOD_ATTRIBUTE = "init-method";
     public static final String DESTROY_METHOD_ATTRIBUTE = "destroy-method";
     public static final String SCOPE_ATTRIBUTE = "scope";
+
+    public static final String BASE_PACKAGE_ATTRIBUTE = "base-package";
+
+    public static final String COMPONENT_SCAN_ELEMENT = "component-scan";
 
     public XmlBeanDefinitionReader(BeanDefinitionRegistry registry) {
         super(registry);
@@ -63,7 +68,16 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
         Document document = reader.read(inputStream);
 
         Element beans = document.getRootElement();
+        Element componentScan = beans.element(COMPONENT_SCAN_ELEMENT);
+        if(componentScan != null) {
+            String scanPath = componentScan.attributeValue(BASE_PACKAGE_ATTRIBUTE);
+            if(StrUtil.isEmpty(scanPath)) {
+                throw new BeansException("The value of base-package attribute can not be empty or null");
+            }
+            scanPackage(scanPath);
+        }
         List<Element> beanList = beans.elements(BEAN_ELEMENT);
+
         for(Element bean : beanList) {
             //解析bean标签
             String id = bean.attributeValue(ID_ATTRIBUTE);
@@ -117,6 +131,16 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
             //注册BeanDefinition
             getRegistry().registerBeanDefinition(beanName, beanDefinition);
         }
+    }
+
+    /**
+     * 扫描注解Component的类 提取信息 封装BeanDefinition
+     * @param scanPath
+     */
+    private void scanPackage(String scanPath) {
+        String[] basePackages = StrUtil.splitToArray(scanPath, ',');
+        ClassPathBeanDefinitionScanner classPathBeanDefinitionScanner = new ClassPathBeanDefinitionScanner(getRegistry());
+        classPathBeanDefinitionScanner.doScan(basePackages);
     }
 
     @Override
