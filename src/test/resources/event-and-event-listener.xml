@@ -4,9 +4,9 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
 	         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean class="common.event.ContextRefreshedEventListener"/>
+    <bean class="org.springframework.test.common.event.ContextRefreshedEventListener"/>
 
-    <bean class="common.event.CustomEventListener"/>
+    <bean class="org.springframework.test.common.event.CustomEventListener"/>
 
-    <bean class="common.event.ContextClosedEventListener"/>
+    <bean class="org.springframework.test.common.event.ContextClosedEventListener"/>
 </beans>

@@ -4,12 +4,12 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
 	         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="person" class="bean.Person" init-method="customInitMethod" destroy-method="customDestroyMethod">
+    <bean id="person" class="org.springframework.test.bean.Person" init-method="customInitMethod" destroy-method="customDestroyMethod">
         <property name="name" value="derek"/>
         <property name="car" ref="car"/>
     </bean>
 
-    <bean id="car" class="bean.Car">
+    <bean id="car" class="org.springframework.test.bean.Car">
         <property name="brand" value="porsche"/>
     </bean>
 

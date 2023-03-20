@@ -1,10 +1,10 @@
 package service;
 
-import com.springframework.beans.BeansException;
-import com.springframework.beans.factory.BeanFactory;
-import com.springframework.beans.factory.BeanFactoryAware;
-import com.springframework.context.ApplicationContext;
-import com.springframework.context.ApplicationContextAware;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * @Author: Paddi-Yan
