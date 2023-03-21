@@ -39,4 +39,14 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
      */
     PropertyValues postProcessPropertyValues(PropertyValues propertyValues, Object bean, String beanName) throws BeansException;
 
+    /**
+     * 提前暴露Bean引用
+     * @param bean
+     * @param beanName
+     * @return
+     * @throws BeansException
+     */
+    default Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
 }

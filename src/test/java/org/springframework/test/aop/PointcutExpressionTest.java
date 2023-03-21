@@ -1,8 +1,8 @@
 package org.springframework.test.aop;
 
-import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.junit.Test;
-import service.HelloService;
+import org.springframework.aop.aspectj.AspectJExpressionPointcut;
+import org.springframework.test.service.HelloService;
 
 import java.lang.reflect.Method;
 

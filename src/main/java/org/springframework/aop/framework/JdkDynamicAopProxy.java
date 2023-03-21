@@ -1,11 +1,12 @@
 package org.springframework.aop.framework;
 
+import cn.hutool.core.collection.CollectionUtil;
 import org.springframework.aop.AdvisedSupport;
-import org.aopalliance.intercept.MethodInterceptor;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.List;
 
 /**
  * @Author: Paddi-Yan
@@ -27,11 +28,21 @@ public class JdkDynamicAopProxy implements AopProxy, InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if(advisedSupport.getMethodMatcher().matches(method, advisedSupport.getTargetSource().getTarget().getClass())) {
-            MethodInterceptor methodInterceptor = advisedSupport.getMethodInterceptor();
-            return methodInterceptor.invoke(new ReflectiveMethodInvocation(advisedSupport.getTargetSource().getTarget(), method, args));
+        //获取目标对象
+        Object target = advisedSupport.getTargetSource().getTarget();
+        Class<?> targetClass = target.getClass();
+        Object returnVal = null;
+        //获取拦截链
+        List<Object> interceptorsChain = this.advisedSupport.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+        if(CollectionUtil.isEmpty(interceptorsChain)) {
+            return method.invoke(target, args);
+        }else {
+            //将拦截器统一封装为ReflectiveMethodInvocation
+            ReflectiveMethodInvocation reflectiveMethodInvocation = new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, interceptorsChain);
+            //执行拦截链
+            returnVal = reflectiveMethodInvocation.proceed();
         }
-        return method.invoke(advisedSupport.getTargetSource().getTarget(), args);
+        return returnVal;
     }
 
 }

@@ -1,8 +1,6 @@
 package org.springframework.aop.framework.autoproxy;
 
 import org.aopalliance.aop.Advice;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.springframework.aop.AdvisedSupport;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.TargetSource;
@@ -16,6 +14,8 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @Author: Paddi-Yan
@@ -26,12 +26,13 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
 
     private DefaultListableBeanFactory beanFactory;
 
+    private Set<Object> earlyProxyReferences = new HashSet<>();
+
     private boolean isInfrastructureClass(Class<?> beanClass) {
         return Advice.class.isAssignableFrom(beanClass)
                 || Pointcut.class.isAssignableFrom(beanClass)
                 || Advisor.class.isAssignableFrom(beanClass);
     }
-
 
 
     @Override
@@ -55,6 +56,19 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if(!earlyProxyReferences.contains(beanName)) {
+            return wrapIfNecessary(bean, beanName);
+        }
+        return bean;
+    }
+
+    @Override
+    public Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
+        earlyProxyReferences.add(beanName);
+        return wrapIfNecessary(bean, beanName);
+    }
+
+    private Object wrapIfNecessary(Object bean, String beanName) {
         //避免基础Bean循环生成代理对象
         if(isInfrastructureClass(bean.getClass())) {
             return bean;
@@ -62,17 +76,19 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
 
         Collection<AspectJExpressionPointcutAdvisor> advisors = beanFactory.getBeansOfType(AspectJExpressionPointcutAdvisor.class).values();
         try {
+            ProxyFactory proxyFactory = new ProxyFactory();
             for(AspectJExpressionPointcutAdvisor advisor : advisors) {
                 if(advisor.getPointcut().getClassFilter().matches(bean.getClass())) {
-                    AdvisedSupport support = new AdvisedSupport();
                     TargetSource targetSource = new TargetSource(bean);
-                    support.setTargetSource(targetSource);
-                    support.setMethodInterceptor((MethodInterceptor) advisor.getAdvice());
-                    support.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
-
-                    //返回代理对象
-                    return new ProxyFactory(support).getProxy();
+                    proxyFactory.setTargetSource(targetSource);
+                    proxyFactory.addAdvisor(advisor);
+                    proxyFactory.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
                 }
+            }
+            //如果该对象有配置Advice进行方法增强
+            if(!proxyFactory.getAdvisors().isEmpty()) {
+                //返回该对象的代理对象
+                return proxyFactory.getProxy();
             }
         }catch(Exception e) {
             throw new BeansException("Error create proxy bean for: " + beanName, e);

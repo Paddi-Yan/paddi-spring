@@ -7,12 +7,9 @@ import org.springframework.aop.AdvisedSupport;
  * @Project: mini-spring
  * @CreatedTime: 2023年03月19日 14:32:51
  */
-public class ProxyFactory {
+public class ProxyFactory extends AdvisedSupport{
 
-    private AdvisedSupport support;
-
-    public ProxyFactory(AdvisedSupport support) {
-        this.support = support;
+    public ProxyFactory() {
     }
 
     public Object getProxy() {
@@ -20,9 +17,9 @@ public class ProxyFactory {
     }
 
     private AopProxy createAopProxy() {
-        if(support.isProxyTargetClass()) {
-            return new CglibAopProxy(support);
+        if(this.isProxyTargetClass() || this.getTargetSource().getTargetClass().length == 0) {
+            return new CglibAopProxy(this);
         }
-        return new JdkDynamicAopProxy(support);
+        return new JdkDynamicAopProxy(this);
     }
 }

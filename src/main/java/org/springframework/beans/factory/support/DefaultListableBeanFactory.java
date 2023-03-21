@@ -29,7 +29,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     @Override
     public void preInstantiateSingletons() throws BeansException {
         beanDefinitionMap.forEach((beanName, beanDefinition) -> {
-            if(beanDefinition.isSingleton()) {
+            if(beanDefinition.isSingleton() && !beanDefinition.isLazyInit()) {
                 getBean(beanName);
             }
         });
@@ -58,6 +58,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         return result;
     }
 
+    @Override
     public <T> T getBean(Class<T> requiredType) throws BeansException {
         ArrayList<String> beanNames = new ArrayList<>();
         for(Map.Entry<String, BeanDefinition> entry : beanDefinitionMap.entrySet()) {

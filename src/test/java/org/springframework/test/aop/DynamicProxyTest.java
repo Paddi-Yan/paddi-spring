@@ -1,5 +1,8 @@
 package org.springframework.test.aop;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.aop.AdvisedSupport;
 import org.springframework.aop.ClassFilter;
 import org.springframework.aop.MethodMatcher;
@@ -12,11 +15,8 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.framework.adapter.MethodBeforeAdviceInterceptor;
 import org.springframework.test.common.WorldServiceBeforeAdvice;
 import org.springframework.test.common.WorldServiceInterceptor;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.junit.Before;
-import org.junit.Test;
-import service.WorldService;
-import service.WorldServiceImpl;
+import org.springframework.test.service.WorldService;
+import org.springframework.test.service.WorldServiceImpl;
 
 /**
  * @Author: Paddi-Yan
@@ -58,12 +58,12 @@ public class DynamicProxyTest {
     public void testProxyFactory() throws Exception {
         //JDK动态代理
         advisedSupport.setProxyTargetClass(false);
-        WorldService proxy = (WorldService) new ProxyFactory(advisedSupport).getProxy();
+        WorldService proxy = (WorldService) new ProxyFactory().getProxy();
         proxy.explode();
 
         //CGLIB动态代理
         advisedSupport.setProxyTargetClass(true);
-        proxy = (WorldService) new ProxyFactory(advisedSupport).getProxy();
+        proxy = (WorldService) new ProxyFactory().getProxy();
         proxy.explode();
     }
 
@@ -74,7 +74,7 @@ public class DynamicProxyTest {
         MethodBeforeAdviceInterceptor methodInterceptor = new MethodBeforeAdviceInterceptor(beforeAdvice);
         advisedSupport.setMethodInterceptor(methodInterceptor);
 
-        WorldService proxy = (WorldService) new ProxyFactory(advisedSupport).getProxy();
+        WorldService proxy = (WorldService) new ProxyFactory().getProxy();
         proxy.explode();
     }
 
@@ -100,7 +100,7 @@ public class DynamicProxyTest {
             support.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
             support.setProxyTargetClass(true);
 
-            WorldService proxy = (WorldService) new ProxyFactory(support).getProxy();
+            WorldService proxy = (WorldService) new ProxyFactory().getProxy();
             proxy.explode();
         }
     }

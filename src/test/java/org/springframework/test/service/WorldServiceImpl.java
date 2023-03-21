@@ -1,4 +1,4 @@
-package service;
+package org.springframework.test.service;
 
 /**
  * @Author: Paddi-Yan

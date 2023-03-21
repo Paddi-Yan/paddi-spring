@@ -1,8 +1,8 @@
 package org.springframework.test.aop;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.junit.Test;
-import service.WorldService;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.test.service.WorldService;
 
 /**
  * @Author: Paddi-Yan

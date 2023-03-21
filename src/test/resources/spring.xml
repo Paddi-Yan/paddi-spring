@@ -17,6 +17,6 @@
 
 <!--    <bean class="common.CustomerBeanPostProcessor"/>-->
 
-    <bean id="helloService" class="service.HelloService"/>
+    <bean id="helloService" class="org.springframework.test.service.HelloService"/>
 
 </beans>

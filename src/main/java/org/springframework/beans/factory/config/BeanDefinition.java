@@ -24,6 +24,16 @@ public class BeanDefinition {
 
     private String destroyMethodName;
 
+    private boolean lazyInit = false;
+
+    public boolean isLazyInit() {
+        return lazyInit;
+    }
+
+    public void setLazyInit(boolean lazyInit) {
+        this.lazyInit = lazyInit;
+    }
+
     /**
      * 默认是单例模式
      */

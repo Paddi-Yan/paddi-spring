@@ -1,11 +1,13 @@
 package org.springframework.aop.framework;
 
-import org.springframework.aop.AdvisedSupport;
+import cn.hutool.core.collection.CollectionUtil;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
+import org.springframework.aop.AdvisedSupport;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * cglib动态代理
@@ -30,6 +32,9 @@ public class CglibAopProxy implements AopProxy{
         return enhancer.create();
     }
 
+    /**
+     * 注意此处的MethodInterceptor是cglib中的接口，advised中的MethodInterceptor的AOP中定义的接口，因此定义此类做适配
+     */
     private static class DynamicAdvisedInterceptor implements MethodInterceptor {
         private final AdvisedSupport support;
 
@@ -38,27 +43,34 @@ public class CglibAopProxy implements AopProxy{
         }
 
         @Override
-        public Object intercept(Object o, Method method, Object[] arguments, MethodProxy methodProxy) throws Throwable {
-            CglibMethodInvocation methodInvocation = new CglibMethodInvocation(support.getTargetSource()
-                                                                                           .getTarget(), method, arguments, methodProxy);
-            if(support.getMethodMatcher().matches(method, support.getTargetSource().getTarget().getClass())) {
-                return support.getMethodInterceptor().invoke(methodInvocation);
+        public Object intercept(Object proxy, Method method, Object[] arguments, MethodProxy methodProxy) throws Throwable {
+            Object target = support.getTargetSource().getTarget();
+            Class<?> targetClass = target.getClass();
+            Object returnVal = null;
+            List<Object> interceptorsChain = this.support.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+            CglibMethodInvocation methodInvocation = new CglibMethodInvocation(proxy, target, method, arguments, targetClass, interceptorsChain, methodProxy);
+            if(CollectionUtil.isEmpty(interceptorsChain)) {
+                returnVal = methodProxy.invoke(target, arguments);
+            }else {
+                returnVal = methodInvocation.proceed();
             }
-            return methodInvocation.proceed();
+            return returnVal;
         }
     }
 
     private static class CglibMethodInvocation extends ReflectiveMethodInvocation {
         private final MethodProxy proxy;
 
-        public CglibMethodInvocation(Object target, Method method, Object[] arguments, MethodProxy proxy) {
-            super(target, method, arguments);
-            this.proxy = proxy;
+        public CglibMethodInvocation(Object proxy, Object target, Method method,
+                                     Object[] arguments, Class<?> targetClass,
+                                     List<Object> interceptorsAndDynamicMethodMatchers, MethodProxy methodProxy) {
+            super(proxy, target, method, arguments, targetClass, interceptorsAndDynamicMethodMatchers);
+            this.proxy = methodProxy;
         }
 
         @Override
         public Object proceed() throws Throwable {
-            return this.proxy.invoke(this.target, this.arguments);
+            return super.proceed();
         }
     }
 }
